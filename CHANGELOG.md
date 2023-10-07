@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - 2023-10-07
+## [0.3.0] - 2023-10-07
 
 ### Added
 - Support for extracting metadata from video files (.mp4 and .mkv) using the `hachoir` library.
@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 - Modified the behavior when using the `-f` flag. The script now verifies if the specified file exists before attempting to extract metadata.
 
-## [0.1.0] - 2023-10-06
+## [0.2.0] - 2023-07-21
 
 ### Added
 - Initial release.
