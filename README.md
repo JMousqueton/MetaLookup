@@ -26,9 +26,36 @@ python Metalookup.py -f /path/to/single/file.pdf
 
 * Extract metadata from all files in a directory:
 
-
 ```bash
 python Metalookup.py -d /path/to/directory/
+```
+
+* Detect the format:
+```bash
+python Metalookup.py -f /path/to/single/file.pdf -D 
+```
+
+* Help:
+```bash
+❯ python3 Metalookup.py -h
+
+  __  __     _          _            _             
+ |  \/  |___| |_ __ _  | |   ___  __| |___  _ _ __ 
+ | |\/| / -_)  _/ _` | | |__/ _ \/ _| / / || | '_ \
+ |_|  |_\___|\__\__,_| |____\___/\__|_\_\\_,_| .__/
+                                             |_|   
+
+usage: Metalookup.py [-h] [-v] (-f FILE | -d DIRECTORY) [-D]
+
+Extract metadata from files.
+
+options:
+  -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
+  -f FILE, --file FILE  File to extract metadata from or detect its type
+  -d DIRECTORY, --directory DIRECTORY
+                        Directory to extract metadata from all contained files
+  -D, --detect          Detect the file type based on its magic number. Requires -f.
 ```
 
 ## Features

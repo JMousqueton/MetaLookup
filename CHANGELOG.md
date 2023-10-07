@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - Support for extracting metadata from video files (.mp4 and .mkv) using the `hachoir` library.
 - Added `-v` or `--version` argument to display the current version of the script.
+- Introduced `-D` or `--detect` option as a sub-option for `-f` to determine the file format based on its magic number.
+  - Allows for basic file format detection for common types such as PNG, JPEG, PDF, and some Office documents.
+  - The detection is performed using the initial bytes (magic numbers) of the file to recognize its type.
 
 ### Changed
 - Modified the behavior when using the `-f` flag. The script now verifies if the specified file exists before attempting to extract metadata.

@@ -1,6 +1,6 @@
-PyPDF2 
-Pillow 
-python-docx 
-openpyxl 
+PyPDF2
+Pillow
+python-docx
+openpyxl
 python-pptx
 hachoir

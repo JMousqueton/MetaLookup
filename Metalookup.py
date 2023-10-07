@@ -8,7 +8,7 @@ from pptx import Presentation
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 
-Version = "0.2.0"
+Version = "0.3.0"
 
 Banner = r"""
   __  __     _          _            _             
@@ -18,6 +18,45 @@ Banner = r"""
                                              |_|   
 """
 
+MAGIC_NUMBERS = {
+    # Images
+    b"\x89PNG\r\n\x1a\n": "PNG",
+    b"\xff\xd8": "JPEG",
+    b"\x47\x49\x46\x38\x37\x61": "GIF87a",
+    b"\x47\x49\x46\x38\x39\x61": "GIF89a",
+    b"\x42\x4D": "BMP",
+    b"\x00\x00\x01\x00": "ICO",
+    b"\x00\x00\x02\x00": "CUR",
+    b"\x49\x49\x2A\x00": "TIFF (little-endian)",
+    b"\x4D\x4D\x00\x2A": "TIFF (big-endian)",
+    b"\x38\x42\x50\x53": "PSD",
+    b"\x77\x45\x42\x50": "WebP",
+
+    # Videos
+    b"\x00\x00\x00\x1C\x66\x74\x79\x70": "MP4",
+    b"\x1A\x45\xDF\xA3": "MKV or WebM",
+    b"\x52\x49\x46\x46": "AVI",
+    b"\x00\x00\x01\xBA": "MPEG",
+    b"\x00\x00\x01\xB3": "MPEG",
+    b"\x66\x74\x79\x70\x33\x67\x70": "3GP",
+    b"\x4F\x67\x67\x53": "OGG/OGV",
+    b"\x46\x4C\x56\x01": "FLV",
+    b"\x52\x49\x46\x46": "RIFF (could be AVI or WAV)",
+
+    # Documents (you have these already, but I'm adding just for context)
+    b"\x25\x50\x44\x46": "PDF",
+    b"\x50\x4B\x03\x04": "ZIP or Office Document (.docx, .xlsx, etc.)"
+}
+
+
+def detect_file_type(file_path):
+    max_len = max(len(magic) for magic in MAGIC_NUMBERS.keys())
+    with open(file_path, 'rb') as file:
+        file_start = file.read(max_len)
+        for magic, filetype in MAGIC_NUMBERS.items():
+            if file_start.startswith(magic):
+                return filetype
+    return "Unknown"
 
 def safe_getattr(obj, attr, default=None):
     return getattr(obj, attr, default)
@@ -136,15 +175,22 @@ if __name__ == '__main__':
     print(Banner)
     parser = argparse.ArgumentParser(description='Extract metadata from files.')
     parser.add_argument('-v', '--version', action='version', version=f"Metalookup Version {Version}")
+    
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-f', '--file', help='File to extract metadata from', type=str)
+    group.add_argument('-f', '--file', help='File to extract metadata from or detect its type', type=str)
     group.add_argument('-d', '--directory', help='Directory to extract metadata from all contained files', type=str)
+
+    # This is the new option for detection
+    parser.add_argument('-D', '--detect', action='store_true', help="Detect the file type based on its magic number. Requires -f.")
 
     args = parser.parse_args()
 
     if args.file:
         if not os.path.exists(args.file):
             print(f"Error: The file '{args.file}' does not exist.")
+        elif args.detect:  # New detection logic
+            file_type = detect_file_type(args.file)
+            print(f"The file {args.file} appears to be of type: {file_type}")
         else:
             metadata = extract_metadata(args.file)
             print(f"Metadata for {args.file}:\n{metadata}\n")
