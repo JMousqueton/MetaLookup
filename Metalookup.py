@@ -5,6 +5,18 @@ from PIL import Image, UnidentifiedImageError, ExifTags
 from docx import Document
 from openpyxl import load_workbook
 from pptx import Presentation
+from hachoir.metadata import extractMetadata
+from hachoir.parser import createParser
+
+Version = "0.2.0"
+
+Banner = r"""
+  __  __     _          _            _             
+ |  \/  |___| |_ __ _  | |   ___  __| |___  _ _ __ 
+ | |\/| / -_)  _/ _` | | |__/ _ \/ _| / / || | '_ \
+ |_|  |_\___|\__\__,_| |____\___/\__|_\_\\_,_| .__/
+                                             |_|   
+"""
 
 
 def safe_getattr(obj, attr, default=None):
@@ -16,6 +28,31 @@ def extract_pdf_metadata(pdf_path):
         info = pdf.trailer["/Info"]
         metadata = {key[1:]: info[key] for key in info if key != '/ID'}
         return metadata
+
+def extract_video_metadata(video_path):
+    parser = createParser(video_path)
+    if not parser:
+        print(f"Unable to parse video file: {video_path}")
+        return {}
+    
+    with parser:
+        try:
+            metadata = extractMetadata(parser)
+        except Exception as e:
+            print(f"Metadata extraction error: {e}")
+            return {}
+    
+    if not metadata:
+        return {}
+
+    # Iterate over metadata attributes and fetch their values
+    meta_data_dict = {}
+    for item in metadata:
+        if item.values:
+            meta_data_dict[item.key] = item.values[0].value
+
+    return meta_data_dict
+
 
 def extract_image_metadata(img_path):
     try:
@@ -80,6 +117,8 @@ def extract_metadata(file_path):
         return extract_image_metadata(file_path)
     elif file_path.lower().endswith(('.docx', '.xlsx', '.pptx')):
         return extract_office_metadata(file_path)
+    elif file_path.lower().endswith(('.mp4', '.mkv')):
+        return extract_video_metadata(file_path)
     else:
         print(f"Unsupported file format for {file_path}")
         return {}
@@ -94,7 +133,9 @@ def extract_metadata_from_directory(directory):
             print(f"Metadata for {file_path}:\n{metadata}\n")
 
 if __name__ == '__main__':
+    print(Banner)
     parser = argparse.ArgumentParser(description='Extract metadata from files.')
+    parser.add_argument('-v', '--version', action='version', version=f"Metalookup Version {Version}")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-f', '--file', help='File to extract metadata from', type=str)
     group.add_argument('-d', '--directory', help='Directory to extract metadata from all contained files', type=str)
@@ -102,8 +143,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.file:
-        metadata = extract_metadata(args.file)
-        print(f"Metadata for {args.file}:\n{metadata}\n")
+        if not os.path.exists(args.file):
+            print(f"Error: The file '{args.file}' does not exist.")
+        else:
+            metadata = extract_metadata(args.file)
+            print(f"Metadata for {args.file}:\n{metadata}\n")
     elif args.directory:
         extract_metadata_from_directory(args.directory)
 
