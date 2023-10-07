@@ -1,0 +1,5 @@
+PyPDF2 
+Pillow 
+python-docx 
+openpyxl 
+python-pptx
