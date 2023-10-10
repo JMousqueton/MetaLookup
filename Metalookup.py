@@ -7,6 +7,7 @@ from openpyxl import load_workbook
 from pptx import Presentation
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
+import pefile
 
 Version = "0.3.1"
 
@@ -45,7 +46,10 @@ MAGIC_NUMBERS = {
 
     # Documents (you have these already, but I'm adding just for context)
     b"\x25\x50\x44\x46": "PDF",
-    b"\x50\x4B\x03\x04": "ZIP or Office Document (.docx, .xlsx, etc.)"
+    b"\x50\x4B\x03\x04": "ZIP or Office Document (.docx, .xlsx, etc.)",
+
+    # Executables
+    b"\x4D\x5A": "EXE",  # .exe magic number
 }
 
 
@@ -67,6 +71,25 @@ def extract_pdf_metadata(pdf_path):
         info = pdf.trailer["/Info"]
         metadata = {key[1:]: info[key] for key in info if key != '/ID'}
         return metadata
+
+def extract_exe_metadata(exe_path):
+    try:
+        pe = pefile.PE(exe_path)
+        metadata = {
+            'Machine': hex(pe.FILE_HEADER.Machine),
+            'TimeDateStamp': pe.FILE_HEADER.dump_dict()['TimeDateStamp']['Value'].split('[')[1][:-1],
+            'Subsystem': hex(pe.OPTIONAL_HEADER.Subsystem),
+            'ImageBase': hex(pe.OPTIONAL_HEADER.ImageBase),
+            'EntryPoint': hex(pe.OPTIONAL_HEADER.AddressOfEntryPoint),
+            'Sections': len(pe.sections),
+            'Imports': [entry.dll.decode() for entry in pe.DIRECTORY_ENTRY_IMPORT],
+            'Exports': [entry.name.decode() for entry in pe.DIRECTORY_ENTRY_EXPORT.symbols] if hasattr(pe, 'DIRECTORY_ENTRY_EXPORT') else [],
+        }
+        return metadata
+    except Exception as e:
+        print(f"Error: Could not extract metadata from {exe_path}: {e}")
+        return {}
+
 
 def extract_video_metadata(video_path):
     parser = createParser(video_path)
@@ -158,6 +181,8 @@ def extract_metadata(file_path):
         return extract_office_metadata(file_path)
     elif file_path.lower().endswith(('.mp4', '.mkv')):
         return extract_video_metadata(file_path)
+    elif file_path.lower().endswith(('.exe')):
+        return extract_exe_metadata(file_path)
     else:
         print(f"Unsupported file format for {file_path}")
         return {}
