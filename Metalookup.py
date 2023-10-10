@@ -8,7 +8,7 @@ from pptx import Presentation
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 
-Version = "0.3.0"
+Version = "0.3.1"
 
 Banner = r"""
   __  __     _          _            _             
@@ -179,13 +179,15 @@ if __name__ == '__main__':
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-f', '--file', help='File to extract metadata from or detect its type', type=str)
     group.add_argument('-d', '--directory', help='Directory to extract metadata from all contained files', type=str)
-
+    
     # This is the new option for detection
     parser.add_argument('-D', '--detect', action='store_true', help="Detect the file type based on its magic number. Requires -f.")
 
     args = parser.parse_args()
 
-    if args.file:
+    if args.detect and args.directory:
+        print("Error: The -D (detect) option cannot be used together with the -d (directory) option.")
+    elif args.file:
         if not os.path.exists(args.file):
             print(f"Error: The file '{args.file}' does not exist.")
         elif args.detect:  # New detection logic
@@ -196,4 +198,3 @@ if __name__ == '__main__':
             print(f"Metadata for {args.file}:\n{metadata}\n")
     elif args.directory:
         extract_metadata_from_directory(args.directory)
-

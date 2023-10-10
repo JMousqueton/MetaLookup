@@ -7,7 +7,7 @@ Extract metadata from various file formats including PDFs, images (PNG, JPEG, TI
 Before running the script, you need to install the required libraries. Use the following command:
 
 ```bash
-pip install argparse PyPDF2 Pillow python-docx openpyxl python-pptx
+pip install PyPDF2 Pillow python-docx openpyxl python-pptx hachoir
 ```
 or 
 ```bash
